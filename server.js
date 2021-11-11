@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const ObjectId = require("mongodb").ObjectId;
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const port = process.env.PORT || 8000;
@@ -23,8 +24,27 @@ const run = async () => {
     await client.connect();
     const database = client.db("rucksackData");
     const productsCollection = database.collection("products");
+    const reviewsCollection = database.collection("reviews");
 
-    console.log("mongo db");
+    // Get All Products
+    app.get("/products", async (req, res) => {
+      const products = await productsCollection.find({}).toArray();
+      res.send(products);
+    });
+
+    // Get A Single Product
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const singleProduct = await productsCollection.findOne(query);
+      res.send(singleProduct);
+    });
+
+    // Get All Reviews
+    app.get("/reviews", async (req, res) => {
+      const reviews = await reviewsCollection.find({}).toArray();
+      res.send(reviews);
+    });
   } finally {
     // await client.close();
   }
