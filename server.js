@@ -29,7 +29,7 @@ const run = async () => {
     // Get All Products
     app.get("/products", async (req, res) => {
       const products = await productsCollection.find({}).toArray();
-      res.send(products);
+      res.json(products);
     });
 
     // Get A Single Product
