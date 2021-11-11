@@ -32,7 +32,7 @@ const run = async () => {
       res.send(products);
     });
 
-    // Get A Single Product
+    // Get A Single Product jkfs
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
