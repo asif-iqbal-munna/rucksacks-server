@@ -95,6 +95,18 @@ const run = async () => {
       const userInfo = await usersCollection.insertOne(user);
       res.send(userInfo);
     });
+
+    // Make Admin
+    app.put("/users/admin", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const filter = { email: user.email };
+      const updateDoc = {
+        $set: { role: "admin" },
+      };
+      const admin = await usersCollection.updateOne(filter, updateDoc);
+      res.send(admin);
+    });
   } finally {
     // await client.close();
   }
