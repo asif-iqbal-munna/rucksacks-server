@@ -26,6 +26,7 @@ const run = async () => {
     const productsCollection = database.collection("products");
     const reviewsCollection = database.collection("reviews");
     const ordersCollection = database.collection("orders");
+    const usersCollection = database.collection("users");
 
     // Get All Products
     app.get("/products", async (req, res) => {
@@ -45,6 +46,13 @@ const run = async () => {
     app.get("/reviews", async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
+    });
+
+    // Post a review
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const saveReview = await reviewsCollection.insertOne(review);
+      res.send(saveReview);
     });
 
     // Post Orders To MongoDB
@@ -74,6 +82,18 @@ const run = async () => {
       const query = { _id: ObjectId(id) };
       const orderDltConfirmation = await ordersCollection.deleteOne(query);
       res.send(orderDltConfirmation);
+    });
+
+    // Get All User
+    app.get("/users", async (req, res) => {
+      const users = await usersCollection.find({}).toArray();
+      res.send(users);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const userInfo = await usersCollection.insertOne(user);
+      res.send(userInfo);
     });
   } finally {
     // await client.close();
