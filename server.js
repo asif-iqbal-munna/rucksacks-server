@@ -25,6 +25,7 @@ const run = async () => {
     const database = client.db("rucksackData");
     const productsCollection = database.collection("products");
     const reviewsCollection = database.collection("reviews");
+    const ordersCollection = database.collection("orders");
 
     // Get All Products
     app.get("/products", async (req, res) => {
@@ -44,6 +45,35 @@ const run = async () => {
     app.get("/reviews", async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
+    });
+
+    // Post Orders To MongoDB
+    app.post("/orders", async (req, res) => {
+      const orderInfo = req.body;
+      const saveOrderData = await ordersCollection.insertOne(orderInfo);
+      res.send(saveOrderData);
+    });
+
+    // Get All Orders
+    app.get("/orders", async (req, res) => {
+      const allOrders = await ordersCollection.find({}).toArray();
+      res.send(allOrders);
+    });
+
+    // Get A Specific User's Oders By His Email With Query Parameter
+    app.get("/orders/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const ordersByEmail = await ordersCollection.find(query).toArray();
+      res.send(ordersByEmail);
+    });
+
+    // Delete Order
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const orderDltConfirmation = await ordersCollection.deleteOne(query);
+      res.send(orderDltConfirmation);
     });
   } finally {
     // await client.close();
