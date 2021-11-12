@@ -107,6 +107,18 @@ const run = async () => {
       const admin = await usersCollection.updateOne(filter, updateDoc);
       res.send(admin);
     });
+
+    // Get If Admin
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.send({ admin: isAdmin });
+    });
   } finally {
     // await client.close();
   }
