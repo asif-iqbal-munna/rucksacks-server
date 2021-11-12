@@ -49,6 +49,14 @@ const run = async () => {
       res.send(singleProduct);
     });
 
+    // Delete A Order
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const deletedProduct = await productsCollection.deleteOne(query);
+      res.send(deletedProduct);
+    });
+
     // Get All Reviews
     app.get("/reviews", async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
@@ -89,6 +97,30 @@ const run = async () => {
       const query = { _id: ObjectId(id) };
       const orderDltConfirmation = await ordersCollection.deleteOne(query);
       res.send(orderDltConfirmation);
+    });
+
+    //  Update order status
+    app.put("/orders/manage/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: { status: "approved" },
+      };
+      const approvedOrder = await ordersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(approvedOrder);
+    });
+
+    //  delete order
+    app.delete("/orders/manage/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const deletedOrder = await ordersCollection.deleteOne(query);
+      res.send(deletedOrder);
     });
 
     // Get All User
