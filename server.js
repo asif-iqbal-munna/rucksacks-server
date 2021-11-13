@@ -1,10 +1,17 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const admin = require("firebase-admin");
 const ObjectId = require("mongodb").ObjectId;
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const port = process.env.PORT || 8000;
+
+var serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // Middleware
 app.use(cors());
@@ -18,6 +25,19 @@ const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+//  Middleware to verify before making admin
+const verifyToken = async (req, res, next) => {
+  if (req.headers?.authorization?.startsWith("Bearer ")) {
+    const token = req.headers.authorization.split(" ")[1];
+
+    try {
+      const decodedUser = await admin.auth().verifyIdToken(token);
+      req.decodedEmail = decodedUser.email;
+    } catch {}
+  }
+  next();
+};
 
 const run = async () => {
   try {
@@ -135,16 +155,23 @@ const run = async () => {
       res.send(userInfo);
     });
 
-    // Make Admin
-    app.put("/users/admin", async (req, res) => {
+    // Make Admin and verify requeter with jwt token
+    app.put("/users/admin", verifyToken, async (req, res) => {
       const user = req.body;
-      console.log(user);
-      const filter = { email: user.email };
-      const updateDoc = {
-        $set: { role: "admin" },
-      };
-      const admin = await usersCollection.updateOne(filter, updateDoc);
-      res.send(admin);
+      const requester = req.decodedEmail;
+      if (requester) {
+        const requesterAccount = await usersCollection.findOne({
+          email: requester,
+        });
+        if (requesterAccount.role === "admin") {
+          const filter = { email: user.email };
+          const updateDoc = {
+            $set: { role: "admin" },
+          };
+          const admin = await usersCollection.updateOne(filter, updateDoc);
+          res.send(admin);
+        }
+      }
     });
 
     // Get If Admin
